@@ -4,11 +4,6 @@
  * names are too numerous to list here. Please refer to the
  * COPYRIGHT file distributed with this source distribution.
  *
- * Additionally this file is based on the ScummVM source code.
- * Copyright information for the ScummVM source code is
- * available in the COPYRIGHT file of the ScummVM source
- * distribution.
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -25,6 +20,50 @@
  *
  */
 
-#if defined(SCUMMVM_USE_PRAGMA_PACK)
-  #pragma pack(1)
-#endif
+#include "common/textconsole.h"
+
+void error(const char *s, ...) {
+	char buf[1024];
+	va_list va;
+
+	va_start(va, s);
+	vsnprintf(buf, 1024, s, va);
+	va_end(va);
+
+	fprintf(stderr, "ERROR: %s!\n", buf);
+
+	exit(1);
+}
+
+void warning(const char *s, ...) {
+	char buf[1024];
+	va_list va;
+
+	va_start(va, s);
+	vsnprintf(buf, 1024, s, va);
+	va_end(va);
+
+	fprintf(stderr, "WARNING: %s!\n", buf);
+}
+
+void debug(int /*level*/, const char *s, ...) {
+	char buf[1024];
+	va_list va;
+
+	va_start(va, s);
+	vsnprintf(buf, 1024, s, va);
+	va_end(va);
+
+	fprintf(stderr, "DEBUG: %s!\n", buf);
+}
+
+void notice(const char *s, ...) {
+	char buf[1024];
+	va_list va;
+
+	va_start(va, s);
+	vsnprintf(buf, 1024, s, va);
+	va_end(va);
+
+	fprintf(stdout, "%s\n", buf);
+}

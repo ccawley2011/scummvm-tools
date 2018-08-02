@@ -27,6 +27,7 @@
 #include <stdio.h>
 
 #include "extract_parallaction.h"
+#include "common/str.h"
 
 Archive::Archive(Tool &tool) : _tool(tool) {
 	_fileData = NULL;

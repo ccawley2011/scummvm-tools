@@ -22,21 +22,7 @@
 /* Mohawk file parser */
 
 #include "engines/mohawk/archive.h"
-
-Common::String MohawkArchive::tag2string(uint32 tag) {
-	char str[5];
-	str[0] = (char)(tag >> 24);
-	str[1] = (char)(tag >> 16);
-	str[2] = (char)(tag >> 8);
-	str[3] = (char)tag;
-	str[4] = '\0';
-	// Replace non-printable chars by dot
-	for (int i = 0; i < 4; ++i) {
-		if (!isprint(str[i]))
-			str[i] = '.';
-	}
-	return Common::String(str);
-}
+#include "common/textconsole.h"
 
 MohawkArchive::MohawkArchive() {
 	_mhk = NULL;
@@ -341,7 +327,7 @@ void LivingBooksArchive_v1::open(Common::File *stream) {
 			_mhk->seek(oldPos, SEEK_SET);
 			debug (3, "\n");
 		}
-	} else if (SWAP_32(headerSize) == 6) { // We're in Little Endian mode (Windows)
+	} else if (SWAP_BYTES_32(headerSize) == 6) { // We're in Little Endian mode (Windows)
 		_mhk->readUint16LE(); // Resource Table Size
 		_typeTable.resource_types = _mhk->readUint16LE();
 		_types = new OldType[_typeTable.resource_types];
@@ -486,11 +472,11 @@ MohawkArchive *MohawkArchive::createMohawkArchive(Common::File *stream) {
 		headerTag = stream->readUint32BE();
 		if (headerTag == ID_RSRC)
 			mohawkArchive = new MohawkArchive();
-	} else if (headerTag == 6 || SWAP_32(headerTag) == 6) {
+	} else if (headerTag == 6 || SWAP_BYTES_32(headerTag) == 6) {
 		// Assume the Living Books v1 archive format
 		mohawkArchive = new LivingBooksArchive_v1();
 	} else {
-		headerTag = SWAP_32(headerTag);
+		headerTag = SWAP_BYTES_32(headerTag);
 		// Use a simple heuristic for testing if it's a CSWorld Deluxe file
 		if (headerTag + 2 < stream->size()) {
 			stream->seek(headerTag, SEEK_SET);

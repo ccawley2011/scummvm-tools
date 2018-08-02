@@ -22,6 +22,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #ifndef COMMON_ALGORITHM_H
@@ -29,6 +30,7 @@
 
 #include "common/scummsys.h"
 #include "common/func.h"
+#include "common/util.h"
 
 namespace Common {
 
@@ -77,25 +79,25 @@ Out copy_if(In first, In last, Out dst, Op op) {
 	return dst;
 }
 
-// Our 'specialized' 'set_to' template for char, signed char and unsigned char arrays.
+// Our 'specialized' 'fill' template for char, signed char and unsigned char arrays.
 // Since C++ doesn't support partial specialized template functions (currently) we
 // are going this way...
 // With this we assure the usage of memset for those, which should be
-// faster than a simple loop like for the generic 'set_to'.
+// faster than a simple loop like for the generic 'fill'.
 template<class Value>
-signed char *set_to(signed char *first, signed char *last, Value val) {
+signed char *fill(signed char *first, signed char *last, Value val) {
 	memset(first, (val & 0xFF), last - first);
 	return last;
 }
 
 template<class Value>
-unsigned char *set_to(unsigned char *first, unsigned char *last, Value val) {
+unsigned char *fill(unsigned char *first, unsigned char *last, Value val) {
 	memset(first, (val & 0xFF), last - first);
 	return last;
 }
 
 template<class Value>
-char *set_to(char *first, char *last, Value val) {
+char *fill(char *first, char *last, Value val) {
 	memset(first, (val & 0xFF), last - first);
 	return last;
 }
@@ -104,7 +106,7 @@ char *set_to(char *first, char *last, Value val) {
  * Sets all elements in the range [first, last) to val.
  */
 template<class In, class Value>
-In set_to(In first, In last, Value val) {
+In fill(In first, In last, const Value &val) {
 	while (first != last)
 		*first++ = val;
 	return first;
@@ -144,7 +146,8 @@ In find_if(In first, In last, Pred p) {
  */
 template<class In, class Op>
 Op for_each(In first, In last, Op f) {
-	while (first != last) f(*first++);
+	while (first != last)
+		f(*first++);
 	return f;
 }
 
@@ -180,7 +183,8 @@ T sortChoosePivot(T first, T last) {
 template<typename T, class StrictWeakOrdering>
 T sortPartition(T first, T last, T pivot, StrictWeakOrdering &comp) {
 	--last;
-	SWAP(*pivot, *last);
+	if (pivot != last)
+		SWAP(*pivot, *last);
 
 	T sorted;
 	for (sorted = first; first != last; ++first) {
@@ -191,13 +195,29 @@ T sortPartition(T first, T last, T pivot, StrictWeakOrdering &comp) {
 		}
 	}
 
-	SWAP(*last, *sorted);
+	if (last != sorted)
+		SWAP(*last, *sorted);
 	return sorted;
 }
 
 /**
  * Simple sort function, modeled after std::sort.
  * It compares data with the given comparator object comp.
+ *
+ * Like std::sort this is not guaranteed to be stable.
+ *
+ * Two small quotes from wikipedia about stability:
+ *
+ * Stable sorting algorithms maintain the relative order of records with
+ * equal keys.
+ *
+ * Unstable sorting algorithms may change the relative order of records with
+ * equal keys, but stable sorting algorithms never do so.
+ *
+ * For more information on that topic check out:
+ * http://en.wikipedia.org/wiki/Sorting_algorithm#Stability
+ *
+ * NOTE: Actually as the time of writing our implementation is unstable.
  */
 template<typename T, class StrictWeakOrdering>
 void sort(T first, T last, StrictWeakOrdering comp) {
@@ -215,14 +235,67 @@ void sort(T first, T last, StrictWeakOrdering comp) {
  */
 template<typename T>
 void sort(T *first, T *last) {
-	sort(first, last, Common::Less<T>());
+	sort(first, last, Less<T>());
 }
 
 template<class T>
 void sort(T first, T last) {
-	sort(first, last, Common::Less<typename T::ValueType>());
+	sort(first, last, Less<typename T::ValueType>());
+}
+
+// MSVC is complaining about the minus operator being applied to an unsigned type
+// We disable this warning for the affected section of code
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4146)
+#endif
+
+/**
+ * Euclid's algorithm to compute the greatest common divisor.
+ */
+template<class T>
+T gcd(T a, T b) {
+	// Note: We check for <= instead of < to avoid spurious compiler
+	// warnings if T is an unsigned type, i.e. warnings like "comparison
+	// of unsigned expression < 0 is always false".
+	if (a <= 0)
+		a = -a;
+	if (b <= 0)
+		b = -b;
+
+	while (a > 0) {
+		T tmp = a;
+		a = b % a;
+		b = tmp;
+	}
+
+	return b;
+}
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
+/**
+ * Replacement algorithm for iterables.
+ *
+ * Replaces all occurrences of "original" in [begin, end) with occurrences of "replaced".
+ *
+ * @param[in, out] begin: First element to be examined.
+ * @param[in] end: Last element in the seubsection. Not examined.
+ * @param[in] original: Elements to be replaced.
+ * @param[in] replaced: Element to replace occurrences of "original".
+ *
+ * @note Usage examples and unit tests may be found in "test/common/algorithm.h"
+ */
+template<class It, class Dat>
+void replace(It begin, It end, const Dat &original, const Dat &replaced) {
+	for (; begin != end; ++begin) {
+        if (*begin == original) {
+            *begin = replaced;
+        }
+    }
 }
 
 } // End of namespace Common
 #endif
-

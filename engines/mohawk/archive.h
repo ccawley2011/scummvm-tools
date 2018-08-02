@@ -30,96 +30,94 @@
 #include "common/file.h"
 
 // Main FourCC's
-#define ID_MHWK MKID_BE('MHWK') // Main FourCC
-#define ID_RSRC MKID_BE('RSRC') // Resource Directory Tag
+#define ID_MHWK MKTAG('M','H','W','K') // Main FourCC
+#define ID_RSRC MKTAG('R','S','R','C') // Resource Directory Tag
 
 // Myst Resource FourCC's
-#define ID_CLRC MKID_BE('CLRC') // Cursor Hotspots
-#define ID_EXIT MKID_BE('EXIT') // Card Exit Scripts
-#define ID_HINT MKID_BE('HINT') // Specifies Cursors in What Area
-#define ID_INIT MKID_BE('INIT') // Card Entrance Scripts
-#define ID_MSND MKID_BE('MSND') // Standard Mohawk Sound
-#define ID_RLST MKID_BE('RLST') // Resource List, Specifies HotSpots
-#define ID_RSFL MKID_BE('RSFL') // ??? (system.dat only)
-#define ID_VIEW MKID_BE('VIEW') // Card Details
-#define ID_WDIB MKID_BE('WDIB') // LZ-Compressed Windows Bitmap
+#define ID_CLRC MKTAG('C','L','R','C') // Cursor Hotspots
+#define ID_EXIT MKTAG('E','X','I','T') // Card Exit Scripts
+#define ID_HINT MKTAG('H','I','N','T') // Specifies Cursors in What Area
+#define ID_INIT MKTAG('I','N','I','T') // Card Entrance Scripts
+#define ID_MSND MKTAG('M','S','N','D') // Standard Mohawk Sound
+#define ID_RLST MKTAG('R','L','S','T') // Resource List, Specifies HotSpots
+#define ID_RSFL MKTAG('R','S','F','L') // ??? (system.dat only)
+#define ID_VIEW MKTAG('V','I','E','W') // Card Details
+#define ID_WDIB MKTAG('W','D','I','B') // LZ-Compressed Windows Bitmap
 
 // Myst Masterpiece Edition Resource FourCC's (In addition to Myst FourCC's)
-#define ID_HELP MKID_BE('HELP') // Help Chunk
-#define ID_MJMP MKID_BE('MJMP') // MSND Jumps (To reduce MSND duplication)
-#define ID_PICT MKID_BE('PICT') // JPEG/PICT Image
+#define ID_HELP MKTAG('H','E','L','P') // Help Chunk
+#define ID_MJMP MKTAG('M','J','M','P') // MSND Jumps (To reduce MSND duplication)
+#define ID_PICT MKTAG('P','I','C','T') // JPEG/PICT Image
 
 // Riven Resource FourCC's
-#define ID_BLST MKID_BE('BLST') // Card Hotspot Enabling Lists
-#define ID_CARD MKID_BE('CARD') // Card Scripts
-#define ID_FLST MKID_BE('FLST') // Card SFXE Lists
-#define ID_HSPT MKID_BE('HSPT') // Card Hotspots
-#define ID_MLST MKID_BE('MLST') // Card Movie Lists
-#define ID_NAME MKID_BE('NAME') // Object Names
-#define ID_PLST MKID_BE('PLST') // Card Picture Lists
-#define ID_RMAP MKID_BE('RMAP') // Card Code
-#define ID_SFXE MKID_BE('SFXE') // Water Effect Animations
-#define ID_SLST MKID_BE('SLST') // Card Ambient Sound Lists
-#define ID_TMOV MKID_BE('tMOV') // Game Movie
+#define ID_BLST MKTAG('B','L','S','T') // Card Hotspot Enabling Lists
+#define ID_CARD MKTAG('C','A','R','D') // Card Scripts
+#define ID_FLST MKTAG('F','L','S','T') // Card SFXE Lists
+#define ID_HSPT MKTAG('H','S','P','T') // Card Hotspots
+#define ID_MLST MKTAG('M','L','S','T') // Card Movie Lists
+#define ID_NAME MKTAG('N','A','M','E') // Object Names
+#define ID_PLST MKTAG('P','L','S','T') // Card Picture Lists
+#define ID_RMAP MKTAG('R','M','A','P') // Card Code
+#define ID_SFXE MKTAG('S','F','X','E') // Water Effect Animations
+#define ID_SLST MKTAG('S','L','S','T') // Card Ambient Sound Lists
+#define ID_TMOV MKTAG('t','M','O','V') // Game Movie
 
 // Riven Saved Game FourCC's
-#define ID_VARS MKID_BE('VARS') // Saved Game Variable Values
-#define ID_VERS MKID_BE('VERS') // Version Info
-#define ID_ZIPS MKID_BE('ZIPS') // Zip Mode Status
+#define ID_VARS MKTAG('V','A','R','S') // Saved Game Variable Values
+#define ID_VERS MKTAG('V','E','R','S') // Version Info
+#define ID_ZIPS MKTAG('Z','I','P','S') // Zip Mode Status
 
 // Zoombini Resource FourCC's
-#define ID_SND  MKID_BE('\0SND') // Standard Mohawk Sound
-#define ID_CURS MKID_BE('CURS') // Cursor?
-#define ID_SCRB MKID_BE('SCRB') // ???
-#define ID_SCRS MKID_BE('SCRS') // ???
-#define ID_NODE MKID_BE('NODE') // ???
-#define ID_PATH MKID_BE('PATH') // ???
-#define ID_SHPL MKID_BE('SHPL') // ???
+#define ID_SND  MKTAG('\0','S','N','D') // Standard Mohawk Sound
+#define ID_CURS MKTAG('C','U','R','S') // Cursor?
+#define ID_SCRB MKTAG('S','C','R','B') // ???
+#define ID_SCRS MKTAG('S','C','R','S') // ???
+#define ID_NODE MKTAG('N','O','D','E') // ???
+#define ID_PATH MKTAG('P','A','T','H') // ???
+#define ID_SHPL MKTAG('S','H','P','L') // ???
 
 // Living Books Resource FourCC's
-#define ID_TCUR MKID_BE('tCUR') // Cursor
-#define ID_BITL MKID_BE('BITL') // ???
-#define ID_CTBL MKID_BE('CTBL') // Color Table?
-#define ID_SCRP MKID_BE('SCRP') // Script?
-#define ID_SPR  MKID_BE('SPR#') // Sprites?
-#define ID_VRSN MKID_BE('VRSN') // Version?
-#define ID_ANI  MKID_BE('ANI ') // Animation?
-#define ID_SHP  MKID_BE('SHP#') // ???
+#define ID_TCUR MKTAG('t','C','U','R') // Cursor
+#define ID_BITL MKTAG('B','I','T','L') // ???
+#define ID_CTBL MKTAG('C','T','B','L') // Color Table?
+#define ID_SCRP MKTAG('S','C','R','P') // Script?
+#define ID_SPR  MKTAG('S','P','R','#') // Sprites?
+#define ID_VRSN MKTAG('V','R','S','N') // Version?
+#define ID_ANI  MKTAG('A','N','I',' ') // Animation?
+#define ID_SHP  MKTAG('S','H','P','#') // ???
 
 // JamesMath Resource FourCC's
-#define ID_TANM MKID_BE('tANM') // Animation?
-#define ID_TMFO MKID_BE('tMFO') // ???
+#define ID_TANM MKTAG('t','A','N','M') // Animation?
+#define ID_TMFO MKTAG('t','M','F','O') // ???
 
 // Mohawk Wave Tags
-#define ID_WAVE MKID_BE('WAVE') // Game Sound (Third Tag)
-#define ID_ADPC MKID_BE('ADPC') // Game Sound Chunk
-#define ID_DATA MKID_BE('Data') // Game Sound Chunk
-#define ID_CUE  MKID_BE('Cue#') // Game Sound Chunk
+#define ID_WAVE MKTAG('W','A','V','E') // Game Sound (Third Tag)
+#define ID_ADPC MKTAG('A','D','P','C') // Game Sound Chunk
+#define ID_DATA MKTAG('D','a','t','a') // Game Sound Chunk
+#define ID_CUE  MKTAG('C','u','e','#') // Game Sound Chunk
 
 // Mohawk MIDI Tags
-#define ID_MIDI MKID_BE('MIDI') // Game Sound (Third Tag), instead of WAVE
-#define ID_PRG  MKID_BE('Prg#') // Midi Program?
+#define ID_MIDI MKTAG('M','I','D','I') // Game Sound (Third Tag), instead of WAVE
+#define ID_PRG  MKTAG('P','r','g','#') // Midi Program?
 
 // Old Mohawk Resource FourCC's
-#define ID_WAV  MKID_BE('WAV ') // Old Sound Resource
-#define ID_BMAP MKID_BE('BMAP') // Standard Mohawk Bitmap
+#define ID_WAV  MKTAG('W','A','V',' ') // Old Sound Resource
+#define ID_BMAP MKTAG('B','M','A','P') // Standard Mohawk Bitmap
 
 // Common Resource FourCC's
-#define ID_TBMP MKID_BE('tBMP') // Standard Mohawk Bitmap
-#define ID_TWAV MKID_BE('tWAV') // Standard Mohawk Sound
-#define ID_TPAL MKID_BE('tPAL') // Standard Mohawk Palette
-#define ID_TCNT MKID_BE('tCNT') // ??? (CSWorld, CSAmtrak, JamesMath)
-#define ID_TSCR MKID_BE('tSCR') // Script? Screen? (CSWorld, CSAmtrak, Treehouse)
-#define ID_STRL MKID_BE('STRL') // String List (Zoombini, CSWorld, CSAmtrak)
-#define ID_TBMH MKID_BE('tBMH') // Standard Mohawk Bitmap
-#define ID_TMID MKID_BE('tMID') // Standard Mohawk MIDI
-#define ID_REGS MKID_BE('REGS') // ??? (Zoombini, Treehouse)
-#define ID_BYTS MKID_BE('BYTS') // Database Entry (CSWorld, CSAmtrak)
-#define ID_INTS MKID_BE('INTS') // ??? (CSWorld, CSAmtrak)
-#define ID_BBOX MKID_BE('BBOX') // Boxes? (CSWorld, CSAmtrak)
-#define ID_SYSX MKID_BE('SYSX') // MIDI Sysex
-
-#define tag2str(x)	MohawkArchive::tag2string(x).c_str()
+#define ID_TBMP MKTAG('t','B','M','P') // Standard Mohawk Bitmap
+#define ID_TWAV MKTAG('t','W','A','V') // Standard Mohawk Sound
+#define ID_TPAL MKTAG('t','P','A','L') // Standard Mohawk Palette
+#define ID_TCNT MKTAG('t','C','N','T') // ??? (CSWorld, CSAmtrak, JamesMath)
+#define ID_TSCR MKTAG('t','S','C','R') // Script? Screen? (CSWorld, CSAmtrak, Treehouse)
+#define ID_STRL MKTAG('S','T','R','L') // String List (Zoombini, CSWorld, CSAmtrak)
+#define ID_TBMH MKTAG('t','B','M','H') // Standard Mohawk Bitmap
+#define ID_TMID MKTAG('t','M','I','D') // Standard Mohawk MIDI
+#define ID_REGS MKTAG('R','E','G','S') // ??? (Zoombini, Treehouse)
+#define ID_BYTS MKTAG('B','Y','T','S') // Database Entry (CSWorld, CSAmtrak)
+#define ID_INTS MKTAG('I','N','T','S') // ??? (CSWorld, CSAmtrak)
+#define ID_BBOX MKTAG('B','B','O','X') // Boxes? (CSWorld, CSAmtrak)
+#define ID_SYSX MKTAG('S','Y','S','X') // MIDI Sysex
 
 struct MohawkOutputStream {
 	Common::File *stream;
@@ -194,8 +192,6 @@ public:
 
 	virtual MohawkOutputStream getRawData(uint32 tag, uint16 id);
 	virtual MohawkOutputStream getNextFile();
-
-	static Common::String tag2string(uint32 tag);
 
 protected:
 	Common::File *_mhk;

@@ -29,6 +29,7 @@
 #include "descumm.h"
 
 #include "common/endian.h"
+#include "common/textconsole.h"
 #include "common/util.h"
 
 // 200kb limit on the input file (we just read it all at once into memory).

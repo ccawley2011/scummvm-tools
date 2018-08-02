@@ -400,9 +400,9 @@ void CompressSci::execute() {
 	_output.open(outfile, "wb");
 	// Compression ID
 	switch (_format) {
-	case AUDIO_MP3:		_output.writeUint32BE(MKID_BE('MP3 ')); break;
-	case AUDIO_VORBIS:	_output.writeUint32BE(MKID_BE('OGG ')); break;
-	case AUDIO_FLAC:	_output.writeUint32BE(MKID_BE('FLAC')); break;
+	case AUDIO_MP3:		_output.writeUint32BE(MKTAG('M','P','3',' ')); break;
+	case AUDIO_VORBIS:	_output.writeUint32BE(MKTAG('O','G','G',' ')); break;
+	case AUDIO_FLAC:	_output.writeUint32BE(MKTAG('F','L','A','C')); break;
 	default:			throw ToolException("Unknown audio format!");
 	}
 	// Resource count

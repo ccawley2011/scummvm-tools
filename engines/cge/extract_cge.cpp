@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "common/str.h"
 #include "extract_cge.h"
 #include "cge_structs.h"
 

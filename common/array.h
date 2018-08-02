@@ -22,6 +22,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #ifndef COMMON_ARRAY_H
@@ -29,6 +30,8 @@
 
 #include "common/scummsys.h"
 #include "common/algorithm.h"
+#include "common/textconsole.h" // For error()
+#include "common/memory.h"
 
 namespace Common {
 
@@ -41,45 +44,48 @@ namespace Common {
  * proportional to the number of elements in the array.
  *
  * The container class closest to this in the C++ standard library is
- * std::vector. However, there are some differences. The most important one is
- * that std::vector has a far more sophisticated (and complicated) memory
- * management scheme. There, only elements that 'live' are actually constructed
- * (i.e., have their constructor called), and objects that are removed are
- * immediately destructed (have their destructor called).
- * With Common::Array, this is not the case; instead, it simply uses new[] and
- * delete[] to allocate whole blocks of objects, possibly more than are
- * currently 'alive'. This simplifies memory management, but may have
- * undesirable side effects when one wants to use an Array of complex
- * data types.
- *
- * @todo Improve the storage management of this class.
- * In particular, don't use new[] and delete[], but rather
- * construct/destruct objects manually. This way, we can
- * ensure that storage which is not currently used does not
- * correspond to a live active object.
- * (This is only of interest for array of non-POD objects).
+ * std::vector. However, there are some differences.
  */
 template<class T>
 class Array {
-protected:
-	uint _capacity;
-	uint _size;
-	T *_storage;
-
 public:
 	typedef T *iterator;
 	typedef const T *const_iterator;
 
 	typedef T value_type;
 
-public:
-	Array() : _capacity(0), _size(0), _storage(0) {}
+	typedef uint size_type;
 
-	Array(const Array<T> &array) : _capacity(array._size), _size(array._size), _storage(0) {
+protected:
+	size_type _capacity;
+	size_type _size;
+	T *_storage;
+
+public:
+	Array() : _capacity(0), _size(0), _storage(nullptr) {}
+
+	/**
+	 * Constructs an array with `count` default-inserted instances of T. No
+	 * copies are made.
+	 */
+	explicit Array(size_type count) : _size(count) {
+		allocCapacity(count);
+		for (size_type i = 0; i < count; ++i)
+			new ((void *)&_storage[i]) T();
+	}
+
+	/**
+	 * Constructs an array with `count` copies of elements with value `value`.
+	 */
+	Array(size_type count, const T &value) : _size(count) {
+		allocCapacity(count);
+		uninitialized_fill_n(_storage, count, value);
+	}
+
+	Array(const Array<T> &array) : _capacity(array._size), _size(array._size), _storage(nullptr) {
 		if (array._storage) {
-			_storage = new T[_capacity];
-			assert(_storage);
-			copy(array._storage, array._storage + _size, _storage);
+			allocCapacity(_size);
+			uninitialized_copy(array._storage, array._storage + _size, _storage);
 		}
 	}
 
@@ -87,30 +93,29 @@ public:
 	 * Construct an array by copying data from a regular array.
 	 */
 	template<class T2>
-	Array(const T2 *data, int n) {
-		_capacity = _size = n;
-		_storage = new T[_capacity];
-		assert(_storage);
-		copy(data, data + _size, _storage);
+	Array(const T2 *array, size_type n) {
+		_size = n;
+		allocCapacity(n);
+		uninitialized_copy(array, array + _size, _storage);
 	}
 
 	~Array() {
-		delete[] _storage;
-		_storage = 0;
+		freeStorage(_storage, _size);
+		_storage = nullptr;
 		_capacity = _size = 0;
 	}
 
 	/** Appends element to the end of the array. */
 	void push_back(const T &element) {
 		if (_size + 1 <= _capacity)
-			_storage[_size++] = element;
+			new ((void *)&_storage[_size++]) T(element);
 		else
 			insert_aux(end(), &element, &element + 1);
 	}
 
 	void push_back(const Array<T> &array) {
 		if (_size + array.size() <= _capacity) {
-			copy(array.begin(), array.end(), end());
+			uninitialized_copy(array.begin(), array.end(), end());
 			_size += array.size();
 		} else
 			insert_aux(end(), array.begin(), array.end());
@@ -120,6 +125,18 @@ public:
 	void pop_back() {
 		assert(_size > 0);
 		_size--;
+		// We also need to destroy the last object properly here.
+		_storage[_size].~T();
+	}
+
+	/** Returns a pointer to the underlying memory serving as element storage. */
+	const T *data() const {
+		return _storage;
+	}
+
+	/** Returns a pointer to the underlying memory serving as element storage. */
+	T *data() {
+		return _storage;
 	}
 
 	/** Returns a reference to the first element of the array. */
@@ -147,54 +164,74 @@ public:
 	}
 
 
-	void insert_at(int idx, const T &element) {
-		assert(idx >= 0 && (uint)idx <= _size);
+	void insert_at(size_type idx, const T &element) {
+		assert(idx <= _size);
 		insert_aux(_storage + idx, &element, &element + 1);
 	}
 
-	T remove_at(int idx) {
-		assert(idx >= 0 && (uint)idx < _size);
+	void insert_at(size_type idx, const Array<T> &array) {
+		assert(idx <= _size);
+		insert_aux(_storage + idx, array.begin(), array.end());
+	}
+
+	/**
+	 * Inserts element before pos.
+	 */
+	void insert(iterator pos, const T &element) {
+		insert_aux(pos, &element, &element + 1);
+	}
+
+	T remove_at(size_type idx) {
+		assert(idx < _size);
 		T tmp = _storage[idx];
 		copy(_storage + idx + 1, _storage + _size, _storage + idx);
 		_size--;
+		// We also need to destroy the last object properly here.
+		_storage[_size].~T();
 		return tmp;
 	}
 
 	// TODO: insert, remove, ...
 
-	T& operator[](int idx) {
-		assert(idx >= 0 && (uint)idx < _size);
+	T &operator[](size_type idx) {
+		assert(idx < _size);
 		return _storage[idx];
 	}
 
-	const T& operator[](int idx) const {
-		assert(idx >= 0 && (uint)idx < _size);
+	const T &operator[](size_type idx) const {
+		assert(idx < _size);
 		return _storage[idx];
 	}
 
-	Array<T>& operator=(const Array<T> &array) {
+	Array<T> &operator=(const Array<T> &array) {
 		if (this == &array)
 			return *this;
 
-		delete[] _storage;
+		freeStorage(_storage, _size);
 		_size = array._size;
-		_capacity = _size + 32;
-		_storage = new T[_capacity];
-		assert(_storage);
-		copy(array._storage, array._storage + _size, _storage);
+		allocCapacity(_size);
+		uninitialized_copy(array._storage, array._storage + _size, _storage);
 
 		return *this;
 	}
 
-	uint size() const {
+	size_type size() const {
 		return _size;
 	}
 
 	void clear() {
-		delete[] _storage;
-		_storage = 0;
+		freeStorage(_storage, _size);
+		_storage = nullptr;
 		_size = 0;
 		_capacity = 0;
+	}
+
+	iterator erase(iterator pos) {
+		copy(pos + 1, _storage + _size, pos);
+		_size--;
+		// We also need to destroy the last object properly here.
+		_storage[_size].~T();
+		return pos;
 	}
 
 	bool empty() const {
@@ -206,64 +243,86 @@ public:
 			return true;
 		if (_size != other._size)
 			return false;
-		for (uint i = 0; i < _size; ++i) {
+		for (size_type i = 0; i < _size; ++i) {
 			if (_storage[i] != other._storage[i])
 				return false;
 		}
 		return true;
 	}
+
 	bool operator!=(const Array<T> &other) const {
 		return !(*this == other);
 	}
 
-
-	iterator		begin() {
+	iterator       begin() {
 		return _storage;
 	}
 
-	iterator		end() {
+	iterator       end() {
 		return _storage + _size;
 	}
 
-	const_iterator	begin() const {
+	const_iterator begin() const {
 		return _storage;
 	}
 
-	const_iterator	end() const {
+	const_iterator end() const {
 		return _storage + _size;
 	}
 
-	void reserve(uint newCapacity) {
+	void reserve(size_type newCapacity) {
 		if (newCapacity <= _capacity)
 			return;
 
-		T *old_storage = _storage;
-		_capacity = newCapacity;
-		_storage = new T[newCapacity];
-		assert(_storage);
+		T *oldStorage = _storage;
+		allocCapacity(newCapacity);
 
-		if (old_storage) {
+		if (oldStorage) {
 			// Copy old data
-			copy(old_storage, old_storage + _size, _storage);
-			delete[] old_storage;
+			uninitialized_copy(oldStorage, oldStorage + _size, _storage);
+			freeStorage(oldStorage, _size);
 		}
 	}
 
-	void resize(uint newSize) {
+	void resize(size_type newSize) {
 		reserve(newSize);
-		for (uint i = _size; i < newSize; ++i)
-			_storage[i] = T();
+		for (size_type i = _size; i < newSize; ++i)
+			new ((void *)&_storage[i]) T();
 		_size = newSize;
 	}
 
+	void assign(const_iterator first, const_iterator last) {
+		resize(distance(first, last)); // FIXME: ineffective?
+		T *dst = _storage;
+		while (first != last)
+			*dst++ = *first++;
+	}
+
 protected:
-	static uint roundUpCapacity(uint capacity) {
+	static size_type roundUpCapacity(size_type capacity) {
 		// Round up capacity to the next power of 2;
 		// we use a minimal capacity of 8.
-		uint capa = 8;
+		size_type capa = 8;
 		while (capa < capacity)
 			capa <<= 1;
 		return capa;
+	}
+
+	void allocCapacity(size_type capacity) {
+		_capacity = capacity;
+		if (capacity) {
+			_storage = (T *)malloc(sizeof(T) * capacity);
+			if (!_storage)
+				::error("Common::Array: failure to allocate %u bytes", capacity * (size_type)sizeof(T));
+		} else {
+			_storage = nullptr;
+		}
+	}
+
+	void freeStorage(T *storage, const size_type elements) {
+		for (size_type i = 0; i < elements; ++i)
+			storage[i].~T();
+		free(storage);
 	}
 
 	/**
@@ -282,38 +341,125 @@ protected:
 	iterator insert_aux(iterator pos, const_iterator first, const_iterator last) {
 		assert(_storage <= pos && pos <= _storage + _size);
 		assert(first <= last);
-		const uint n = last - first;
+		const size_type n = last - first;
 		if (n) {
-			const uint idx = pos - _storage;
-			T *newStorage = _storage;
-			if (_size + n > _capacity) {
-				// If there is not enough space, allocate more and
-				// copy old elements over.
-				uint newCapacity = roundUpCapacity(_size + n);
-				newStorage = new T[newCapacity];
-				assert(newStorage);
-				copy(_storage, _storage + idx, newStorage);
-				pos = newStorage + idx;
+			const size_type idx = pos - _storage;
+			if (_size + n > _capacity || (_storage <= first && first <= _storage + _size)) {
+				T *const oldStorage = _storage;
+
+				// If there is not enough space, allocate more.
+				// Likewise, if this is a self-insert, we allocate new
+				// storage to avoid conflicts.
+				allocCapacity(roundUpCapacity(_size + n));
+
+				// Copy the data from the old storage till the position where
+				// we insert new data
+				uninitialized_copy(oldStorage, oldStorage + idx, _storage);
+				// Copy the data we insert
+				uninitialized_copy(first, last, _storage + idx);
+				// Afterwards copy the old data from the position where we
+				// insert.
+				uninitialized_copy(oldStorage + idx, oldStorage + _size, _storage + idx + n);
+
+				freeStorage(oldStorage, _size);
+			} else if (idx + n <= _size) {
+				// Make room for the new elements by shifting back
+				// existing ones.
+				// 1. Move a part of the data to the uninitialized area
+				uninitialized_copy(_storage + _size - n, _storage + _size, _storage + _size);
+				// 2. Move a part of the data to the initialized area
+				copy_backward(pos, _storage + _size - n, _storage + _size);
+
+				// Insert the new elements.
+				copy(first, last, pos);
+			} else {
+				// Copy the old data from the position till the end to the new
+				// place.
+				uninitialized_copy(pos, _storage + _size, _storage + idx + n);
+
+				// Copy a part of the new data to the position inside the
+				// initialized space.
+				copy(first, first + (_size - idx), pos);
+
+				// Copy a part of the new data to the position inside the
+				// uninitialized space.
+				uninitialized_copy(first + (_size - idx), last, _storage + _size);
 			}
-
-			// Make room for the new elements by shifting back
-			// existing ones.
-			copy_backward(_storage + idx, _storage + _size, newStorage + _size + n);
-
-			// Insert the new elements.
-			copy(first, last, pos);
 
 			// Finally, update the internal state
-			if (newStorage != _storage) {
-				delete[] _storage;
-				_capacity = roundUpCapacity(_size + n);
-				_storage = newStorage;
-			}
 			_size += n;
 		}
 		return pos;
 	}
 
+};
+
+/**
+ * Double linked list with sorted nodes.
+ */
+template<class T>
+class SortedArray : public Array<T> {
+public:
+	typedef T *iterator;
+	typedef uint size_type;
+
+	SortedArray(int (*comparator)(const void *, const void *)) {
+		_comparator = comparator;
+	}
+
+	/**
+	 * Inserts element at the sorted position.
+	 */
+	void insert(const T &element) {
+		if (!this->_size) {
+			this->insert_aux(this->_storage, &element, &element + 1);
+			return;
+		}
+
+		T *where = bsearchMin(element);
+
+		if (where > this->_storage + this->_size)
+			Array<T>::push_back(element);
+		else
+			Array<T>::insert(where, element);
+	}
+
+private:
+	T &operator[](size_type idx);
+
+	void insert_at(size_type idx, const T &element);
+
+	void insert_at(size_type idx, const Array<T> &array);
+
+	void insert(iterator pos, const T &element);
+
+	void push_back(const T &element);
+
+	void push_back(const Array<T> &array);
+
+	// Based on code Copyright (C) 2008-2009 Ksplice, Inc.
+	// Author: Tim Abbott <tabbott@ksplice.com>
+	// Licensed under GPLv2+
+	T *bsearchMin(void *key) {
+		uint start_ = 0, end_ = this->_size;
+		int result;
+
+		while (start_ < end_) {
+			uint mid = start_ + (end_ - start_) / 2;
+
+			result = this->_comparator(key, this->_storage[mid]);
+			if (result < 0)
+				end_ = mid;
+			else if (result > 0)
+				start_ = mid + 1;
+			else
+				return &this->_storage[mid];
+		}
+
+		return &this->_storage[start_];
+	}
+
+	int (*_comparator)(const void *, const void *);
 };
 
 } // End of namespace Common

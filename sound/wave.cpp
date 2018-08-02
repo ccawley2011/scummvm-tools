@@ -22,6 +22,7 @@
 #include "sound/audiostream.h"
 #include "sound/adpcm.h"
 #include "common/file.h"
+#include "common/textconsole.h"
 #include "common/util.h"
 
 #include <stdlib.h>

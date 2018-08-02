@@ -23,6 +23,7 @@
 
 #include "degob_script.h"
 #include "common/endian.h"
+#include "common/textconsole.h"
 #include "common/util.h"
 
 #define OPCODET(x) _OPCODET(Script_v2, x)

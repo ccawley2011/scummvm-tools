@@ -281,13 +281,13 @@ void CompressTinsel::execute() {
 
 	switch (_format) {
  	case AUDIO_MP3:
-		_output_smp.writeUint32BE(MKID_BE('MP3 '));
+		_output_smp.writeUint32BE(MKTAG('M','P','3',' '));
 		break;
 	case AUDIO_VORBIS:
-		_output_smp.writeUint32BE(MKID_BE('OGG '));
+		_output_smp.writeUint32BE(MKTAG('O','G','G',' '));
 		break;
 	case AUDIO_FLAC:
-		_output_idx.writeUint32BE(MKID_BE('FLAC'));
+		_output_idx.writeUint32BE(MKTAG('F','L','A','C'));
 		break;
 	default:
 		throw ToolException("Unknown audio format!");
@@ -335,9 +335,9 @@ void CompressTinsel::execute() {
 			if (indexNo==0) {
 				// Write signature as index 0
 				switch (_format) {
-				case AUDIO_MP3: _output_idx.writeUint32BE(MKID_BE('MP3 ')); break;
-				case AUDIO_VORBIS: _output_idx.writeUint32BE(MKID_BE('OGG ')); break;
-				case AUDIO_FLAC: _output_idx.writeUint32BE(MKID_BE('FLAC')); break;
+				case AUDIO_MP3: _output_idx.writeUint32BE(MKTAG('M','P','3',' ')); break;
+				case AUDIO_VORBIS: _output_idx.writeUint32BE(MKTAG('O','G','G',' ')); break;
+				case AUDIO_FLAC: _output_idx.writeUint32BE(MKTAG('F','L','A','C')); break;
 				default: throw ToolException("Unknown audio format!");
 				}
 			} else {

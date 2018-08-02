@@ -23,6 +23,7 @@
 
 #include "common/endian.h"
 #include "common/file.h"
+#include "common/textconsole.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -162,8 +163,8 @@ int main(int argc, char *argv[]) {
 	Common::File sjisFont(out, "wb");
 	if (sjisFont.isOpen()) {
 		// Write our magic bytes
-		sjisFont.writeUint32BE(MKID_BE('SCVM'));
-		sjisFont.writeUint32BE(MKID_BE('SJIS'));
+		sjisFont.writeUint32BE(MKTAG('S','C','V','M'));
+		sjisFont.writeUint32BE(MKTAG('S','J','I','S'));
 
 		// Write version
 		sjisFont.writeUint32BE(0x00000003);

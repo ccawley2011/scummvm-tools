@@ -25,6 +25,47 @@
  *
  */
 
-#if defined(SCUMMVM_USE_PRAGMA_PACK)
-  #pragma pack(1)
+#ifndef COMMON_MEMORY_H
+#define COMMON_MEMORY_H
+
+#include "common/scummsys.h"
+
+namespace Common {
+
+/**
+ * Copies data from the range [first, last) to [dst, dst + (last - first)).
+ * It requires the range [dst, dst + (last - first)) to be valid and
+ * uninitialized.
+ */
+template<class In, class Type>
+Type *uninitialized_copy(In first, In last, Type *dst) {
+	while (first != last)
+		new ((void *)dst++) Type(*first++);
+	return dst;
+}
+
+/**
+ * Initializes the memory [first, first + (last - first)) with the value x.
+ * It requires the range [first, first + (last - first)) to be valid and
+ * uninitialized.
+ */
+/*template<class Type, class Value>
+void uninitialized_fill(Type *first, Type *last, const Value &x) {
+	while (first != last)
+		new ((void *)first++) Type(x);
+}*/
+
+/**
+ * Initializes the memory [dst, dst + n) with the value x.
+ * It requires the range [dst, dst + n) to be valid and
+ * uninitialized.
+ */
+template<class Type, class Value>
+void uninitialized_fill_n(Type *dst, size_t n, const Value &x) {
+	while (n--)
+		new ((void *)dst++) Type(x);
+}
+
+} // End of namespace Common
+
 #endif

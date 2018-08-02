@@ -26,6 +26,7 @@
 
 #include "extract_gob_stk.h"
 #include "common/endian.h"
+#include "common/str.h"
 
 #define confSTK10 "STK10"
 #define confSTK21 "STK21"

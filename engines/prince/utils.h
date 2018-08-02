@@ -22,6 +22,7 @@
 #ifndef PRINCE_UTILS_H
 #define PRINCE_UTILS_H
 
+#include "common/array.h"
 #include "common/file.h"
 #include "common/str.h"
 

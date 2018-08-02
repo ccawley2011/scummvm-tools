@@ -28,6 +28,7 @@
 #include <sstream>
 
 #include "common/file.h"
+#include "common/str.h"
 #include "tool.h"
 #include "version.h"
 

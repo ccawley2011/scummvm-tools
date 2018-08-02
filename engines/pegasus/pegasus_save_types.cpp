@@ -28,11 +28,11 @@
 #include "common/file.h"
 #include "common/str.h"
 
-static const uint32 kPegasusCreator = MKID_BE('JPPP');
-static const uint32 kPegasusDisc1 = MKID_BE('PPG1');
-static const uint32 kPegasusDisc2 = MKID_BE('PPG2');
-static const uint32 kPegasusDisc3 = MKID_BE('PPG3');
-static const uint32 kPegasusDisc4 = MKID_BE('PPG4');
+static const uint32 kPegasusCreator = MKTAG('J','P','P','P');
+static const uint32 kPegasusDisc1 = MKTAG('P','P','G','1');
+static const uint32 kPegasusDisc2 = MKTAG('P','P','G','2');
+static const uint32 kPegasusDisc3 = MKTAG('P','P','G','3');
+static const uint32 kPegasusDisc4 = MKTAG('P','P','G','4');
 
 int main(int argc, char **argv) {
 	if (argc < 2) {

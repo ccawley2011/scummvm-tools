@@ -7,7 +7,6 @@
 
 TESTS        := $(srcdir)/decompiler/test/*.h
 TEST_LIBS    := \
-	common/file.o\
 	decompiler/codegen.o \
 	decompiler/control_flow.o \
 	decompiler/disassembler.o \
@@ -23,6 +22,7 @@ TEST_LIBS    := \
 	decompiler/test/disassembler/pasc.o \
 	decompiler/test/disassembler/subopcode.o	\
 	decompiler/unknown_opcode.o \
+	$(UTILS) \
 
 #
 TEST_FLAGS   := --runner=StdioPrinter

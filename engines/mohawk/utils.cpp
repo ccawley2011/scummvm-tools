@@ -22,14 +22,15 @@
 #include "engines/mohawk/utils.h"
 
 #include "common/endian.h"
+#include "common/textconsole.h"
 #include "common/util.h"
 
-#define ATOM_STCO MKID_BE('stco')
-#define ATOM_MOOV MKID_BE('moov')
-#define ATOM_TRAK MKID_BE('trak')
-#define ATOM_MDIA MKID_BE('mdia')
-#define ATOM_MINF MKID_BE('minf')
-#define ATOM_STBL MKID_BE('stbl')
+#define ATOM_STCO MKTAG('s','t','c','o')
+#define ATOM_MOOV MKTAG('m','o','o','v')
+#define ATOM_TRAK MKTAG('t','r','a','k')
+#define ATOM_MDIA MKTAG('m','d','i','a')
+#define ATOM_MINF MKTAG('m','i','n','f')
+#define ATOM_STBL MKTAG('s','t','b','l')
 
 #define BUF_SIZE 8192
 

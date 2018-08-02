@@ -28,6 +28,7 @@
 
 #include "degob_script.h"
 #include "common/endian.h"
+#include "common/textconsole.h"
 #include "common/util.h"
 
 ExtTable::ExtTable(byte *data, uint32 size, byte *dataCom, uint32 sizeCom) :

@@ -22,6 +22,7 @@
 #ifndef EXTRACT_KYRA_H
 #define EXTRACT_KYRA_H
 
+#include "common/str.h"
 #include <string.h>
 
 #include "tool.h"

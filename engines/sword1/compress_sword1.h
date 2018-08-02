@@ -24,6 +24,7 @@
 #ifndef COMPRESS_SWORD1_H
 #define COMPRESS_SWORD1_H
 
+#include "common/str.h"
 #include "compress.h"
 
 class CompressSword1 : public CompressionTool {

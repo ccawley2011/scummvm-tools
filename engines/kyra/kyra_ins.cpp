@@ -25,6 +25,7 @@
 #include "kyra_ins.h"
 
 #include "common/endian.h"
+#include "common/textconsole.h"
 #include "common/util.h"
 
 class FileExpanderSource {

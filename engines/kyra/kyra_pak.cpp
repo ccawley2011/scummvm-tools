@@ -25,6 +25,7 @@
 #include "kyra_pak.h"
 
 #include "common/endian.h"
+#include "common/textconsole.h"
 #include "common/util.h"
 
 bool PAKFile::isPakFile(const char *filename) {
@@ -38,7 +39,7 @@ bool PAKFile::isPakFile(const char *filename) {
 	offset = f.readUint32LE();
 	if (offset > filesize) {
 		switchEndian = true;
-		offset = SWAP_32(offset);
+		offset = SWAP_BYTES_32(offset);
 	}
 
 	char lastFilenameByte = 0;
@@ -282,7 +283,7 @@ void PAKFile::generateLinkEntry() {
 		linkList[usedLinks++] = entry->linksTo;
 	}
 
-	output.writeUint32BE(MKID_BE('SCVM'));
+	output.writeUint32BE(MKTAG('S','C','V','M'));
 	output.writeUint32BE(usedLinks);
 	for (int i = 0; i < usedLinks; ++i) {
 		int count = 0;
@@ -325,7 +326,7 @@ void PAKFile::loadLinkEntry() {
 		const uint8 *src = entry->data;
 
 		uint32 magic = READ_BE_UINT32(src); src += 4;
-		if (magic != MKID_BE('SCVM'))
+		if (magic != MKTAG('S','C','V','M'))
 			error("LINKLIST file does not contain 'SCVM' header");
 		uint32 links = READ_BE_UINT32(src); src += 4;
 		for (uint32 i = 0; i < links; ++i) {

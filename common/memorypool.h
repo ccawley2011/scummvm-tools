@@ -22,6 +22,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #ifndef COMMON_MEMORYPOOL_H
@@ -67,7 +68,7 @@ public:
 	 * Constructor for a memory pool with the given chunk size.
 	 * @param chunkSize		the chunk size of this memory pool
 	 */
-	MemoryPool(size_t chunkSize);
+	explicit MemoryPool(size_t chunkSize);
 	~MemoryPool();
 
 	/**
@@ -109,7 +110,7 @@ template<size_t CHUNK_SIZE, size_t NUM_INTERNAL_CHUNKS = 32>
 class FixedSizeMemoryPool : public MemoryPool {
 private:
 	enum {
-		REAL_CHUNK_SIZE = (CHUNK_SIZE + sizeof(void*) - 1) & (~(sizeof(void*) - 1))
+		REAL_CHUNK_SIZE = (CHUNK_SIZE + sizeof(void *) - 1) & (~(sizeof(void *) - 1))
 	};
 
 	byte	_storage[NUM_INTERNAL_CHUNKS * REAL_CHUNK_SIZE];
@@ -145,7 +146,7 @@ public:
 	}
 };
 
-}	// End of namespace Common
+} // End of namespace Common
 
 /**
  * A custom placement new operator, using an arbitrary MemoryPool.
@@ -155,12 +156,12 @@ public:
  * For details on using placement new for custom allocators, see e.g.
  * <http://www.parashift.com/c++-faq-lite/dtors.html#faq-11.14>
  */
-inline void* operator new(size_t nbytes, Common::MemoryPool& pool) {
+inline void *operator new(size_t nbytes, Common::MemoryPool &pool) {
 	assert(nbytes <= pool.getChunkSize());
 	return pool.allocChunk();
 }
 
-inline void operator delete(void* p, Common::MemoryPool& pool) {
+inline void operator delete(void *p, Common::MemoryPool &pool) {
 	pool.freeChunk(p);
 }
 

@@ -69,6 +69,7 @@ UTILS := \
 	common/md5.o \
 	common/memorypool.o \
 	common/str.o \
+	common/textconsole.o \
 	common/util.o \
 	sound/adpcm.o \
 	sound/audiostream.o \
@@ -161,7 +162,7 @@ create_sjisfnt_LIBS := $(FREETYPELIBS) $(ICONVLIBS)
 create_sjisfnt.o: CPPFLAGS+=$(FREETYPEINCLUDES) $(ICONVCFLAGS)
 
 
-sword2_clue_OBJS := engines/sword2/sword2_clue.o common/file.o
+sword2_clue_OBJS := engines/sword2/sword2_clue.o $(UTILS)
 sword2_clue_LIBS := `pkg-config --libs gtk+-2.0`
 # Set custom build flags
 engines/sword2/sword2_clue.o: CPPFLAGS+=`pkg-config --cflags gtk+-2.0`
@@ -239,7 +240,6 @@ scummvm-tools-cli_LIBS := $(LIBS)
 
 ifdef USE_BOOST
 decompile_OBJS := \
-	common/file.o \
 	decompiler/codegen.o \
 	decompiler/control_flow.o \
 	decompiler/decompiler.o \
@@ -256,7 +256,8 @@ decompile_OBJS := \
 	decompiler/kyra/engine.o \
 	decompiler/scummv6/codegen.o \
 	decompiler/scummv6/disassembler.o \
-	decompiler/scummv6/engine.o
+	decompiler/scummv6/engine.o \
+	$(UTILS)
 
 decompile_LIBS := \
 	-lboost_program_options$(BOOST_SUFFIX)

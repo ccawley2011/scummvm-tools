@@ -280,16 +280,16 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 	// Load data
 	IFF_ID id;
 	id = _f.readUint32BE();
-	if (id != MKID_BE('FORM')) {
+	if (id != MKTAG('F','O','R','M')) {
 		std::stringstream s;
-		s << boost::format("Unexpected IFF magic number 0x%08X (expected 0x%08X)!") % id % MKID_BE('FORM');
+		s << boost::format("Unexpected IFF magic number 0x%08X (expected 0x%08X)!") % id % MKTAG('F','O','R','M');
 		throw std::runtime_error(s.str());
 	}
 	_f.readUint32BE(); // Skip file length
 	_formType = _f.readUint32BE();
-	if (_formType != MKID_BE('EMC2')) {
+	if (_formType != MKTAG('E','M','C','2')) {
 		std::stringstream s;
-		s << boost::format("Unexpected file type 0x%08X (expected 0x%08X)!") % _formType % MKID_BE('EMC2');
+		s << boost::format("Unexpected file type 0x%08X (expected 0x%08X)!") % _formType % MKTAG('E','M','C','2');
 		throw std::runtime_error(s.str());
 	}
 
@@ -301,13 +301,13 @@ void Kyra::Kyra2Disassembler::doDisassemble() throw(std::exception) {
 		temp._data = new uint8[temp._size];
 		_f.read_throwsOnError(temp._data, temp._size);
 		switch (temp._chunkType) {
-		case MKID_BE('TEXT'):
+		case MKTAG('T','E','X','T'):
 			_textChunk = temp;
 			break;
-		case MKID_BE('ORDR'):
+		case MKTAG('O','R','D','R'):
 			_ordrChunk = temp;
 			break;
-		case MKID_BE('DATA'):
+		case MKTAG('D','A','T','A'):
 			_dataChunk = temp;
 			break;
 		default:

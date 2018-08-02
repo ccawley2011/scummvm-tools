@@ -22,6 +22,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "common/memorypool.h"
@@ -35,10 +36,10 @@ enum {
 
 static size_t adjustChunkSize(size_t chunkSize) {
 	// You must at least fit the pointer in the node (technically unneeded considering the next rounding statement)
-	chunkSize = MAX(chunkSize, sizeof(void*));
+	chunkSize = MAX(chunkSize, sizeof(void *));
 	// There might be an alignment problem on some platforms when trying to load a void* on a non natural boundary
-	// so we round to the next sizeof(void*)
-	chunkSize = (chunkSize + sizeof(void*) - 1) & (~(sizeof(void*) - 1));
+	// so we round to the next sizeof(void *)
+	chunkSize = (chunkSize + sizeof(void *) - 1) & (~(sizeof(void *) - 1));
 
 	return chunkSize;
 }
@@ -47,7 +48,7 @@ static size_t adjustChunkSize(size_t chunkSize) {
 MemoryPool::MemoryPool(size_t chunkSize)
 	: _chunkSize(adjustChunkSize(chunkSize)) {
 
-	_next = NULL;
+	_next = nullptr;
 
 	_chunksPerPage = INITIAL_CHUNKS_PER_PAGE;
 }
@@ -68,7 +69,7 @@ void MemoryPool::allocPage() {
 
 	// Allocate a new page
 	page.numChunks = _chunksPerPage;
-	assert(page.numChunks * _chunkSize < 16*1024*1024);	// Refuse to allocate pages bigger than 16 MB
+	assert(page.numChunks * _chunkSize < 16*1024*1024); // Refuse to allocate pages bigger than 16 MB
 
 	page.start = ::malloc(page.numChunks * _chunkSize);
 	assert(page.start);
@@ -83,42 +84,42 @@ void MemoryPool::allocPage() {
 }
 
 void MemoryPool::addPageToPool(const Page &page) {
-
 	// Add all chunks of the new page to the linked list (pool) of free chunks
 	void *current = page.start;
 	for (size_t i = 1; i < page.numChunks; ++i) {
-		void *next    = ((char*)current + _chunkSize);
+		void *next = (byte *)current + _chunkSize;
 		*(void **)current = next;
 
 		current = next;
 	}
 
 	// Last chunk points to the old _next
-	*(void**)current = _next;
+	*(void **)current = _next;
 
 	// From now on, the first free chunk is the first chunk of the new page
 	_next = page.start;
 }
 
 void *MemoryPool::allocChunk() {
-	if (!_next)	// No free chunks left? Allocate a new page
+	// No free chunks left? Allocate a new page
+	if (!_next)
 		allocPage();
 
 	assert(_next);
 	void *result = _next;
-	_next = *(void**)result;
+	_next = *(void **)result;
 	return result;
 }
 
 void MemoryPool::freeChunk(void *ptr) {
 	// Add the chunk back to (the start of) the list of free chunks
-	*(void**)ptr = _next;
+	*(void **)ptr = _next;
 	_next = ptr;
 }
 
 // Technically not compliant C++ to compare unrelated pointers. In practice...
 bool MemoryPool::isPointerInPage(void *ptr, const Page &page) {
-	return (ptr >= page.start) && (ptr < (char*)page.start + page.numChunks * _chunkSize);
+	return (ptr >= page.start) && (ptr < (char *)page.start + page.numChunks * _chunkSize);
 }
 
 void MemoryPool::freeUnusedPages() {
@@ -139,7 +140,8 @@ void MemoryPool::freeUnusedPages() {
 				break;
 			}
 		}
-		iterator = *(void**)iterator;
+
+		iterator = *(void **)iterator;
 	}
 
 	// Free all pages which are not in use.
@@ -150,22 +152,23 @@ void MemoryPool::freeUnusedPages() {
 			void **iter2 = &_next;
 			while (*iter2) {
 				if (isPointerInPage(*iter2, _pages[i]))
-					*iter2 = **(void***)iter2;
+					*iter2 = **(void ***)iter2;
 				else
-					iter2 = *(void***)iter2;
+					iter2 = *(void ***)iter2;
 			}
+
 			::free(_pages[i].start);
 			++freedPagesCount;
-			_pages[i].start = NULL;
+			_pages[i].start = nullptr;
 		}
 	}
 
-//	printf("freed %d pages out of %d\n", (int)freedPagesCount, (int)_pages.size());
+//	debug("freed %d pages out of %d", (int)freedPagesCount, (int)_pages.size());
 
 	// Remove all now unused pages
 	size_t newSize = 0;
 	for (size_t i = 0; i < _pages.size(); ++i) {
-		if (_pages[i].start != NULL) {
+		if (_pages[i].start != nullptr) {
 			if (newSize != i)
 				_pages[newSize] = _pages[i];
 			++newSize;
@@ -181,4 +184,4 @@ void MemoryPool::freeUnusedPages() {
 	}
 }
 
-}	// End of namespace Common
+} // End of namespace Common
